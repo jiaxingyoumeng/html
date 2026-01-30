@@ -3,26 +3,21 @@ package service
 import "context"
 
 type ReviewService struct {
-  repo interface{}
+  repo          interface{}
+  pubmedBaseURL string
+  pubmedAPIKey  string
+  storageDir    string
+  tasks         *writingTaskStore
 }
 
-func NewReviewService(repo interface{}) *ReviewService {
-  return &ReviewService{repo: repo}
-}
-
-type WritingRequest struct {
-  Title          string `json:"title"`
-  Topic          string `json:"topic"`
-  Locale         string `json:"locale"`
-  PubmedQuery    string `json:"pubmedQuery"`
-  IncludeFilters bool   `json:"includeFilters"`
-}
-
-type WritingResult struct {
-  ReviewID    string `json:"reviewId"`
-  Status      string `json:"status"`
-  DownloadURL string `json:"downloadUrl"`
-  Message     string `json:"message"`
+func NewReviewService(repo interface{}, pubmedBaseURL string, pubmedAPIKey string, storageDir string) *ReviewService {
+  return &ReviewService{
+    repo:          repo,
+    pubmedBaseURL: pubmedBaseURL,
+    pubmedAPIKey:  pubmedAPIKey,
+    storageDir:    storageDir,
+    tasks:         newWritingTaskStore(),
+  }
 }
 
 func (service *ReviewService) CreateReview(ctx context.Context, payload map[string]any) (map[string]any, error) {
@@ -54,11 +49,4 @@ func (service *ReviewService) CheckGenerationStatus(ctx context.Context, taskID 
   return map[string]any{"taskId": taskID, "status": "processing"}, nil
 }
 
-func (service *ReviewService) StartWritingWorkflow(ctx context.Context, payload WritingRequest) (*WritingResult, error) {
-  return &WritingResult{
-    ReviewID:    "pending",
-    Status:      "queued",
-    DownloadURL: "",
-    Message:     "workflow queued",
-  }, nil
-}
+ 

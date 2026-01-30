@@ -38,3 +38,25 @@ func StartWriting(reviewService *service.ReviewService) gin.HandlerFunc {
     c.JSON(http.StatusAccepted, result)
   }
 }
+
+func GetWritingStatus(reviewService *service.ReviewService) gin.HandlerFunc {
+  return func(c *gin.Context) {
+    result, err := reviewService.GetWritingStatus(c.Param("id"))
+    if err != nil {
+      c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+      return
+    }
+    c.JSON(http.StatusOK, result)
+  }
+}
+
+func DownloadWritingDocument(reviewService *service.ReviewService) gin.HandlerFunc {
+  return func(c *gin.Context) {
+    filePath, err := reviewService.GetWritingDocumentPath(c.Param("id"))
+    if err != nil {
+      c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+      return
+    }
+    c.FileAttachment(filePath, "review.docx")
+  }
+}

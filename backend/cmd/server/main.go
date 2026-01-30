@@ -29,7 +29,7 @@ func main() {
 
   authService := service.NewAuthService(repo, cfg.JWT.Secret, cfg.JWT.Expiration)
   userService := service.NewUserService(repo)
-  reviewService := service.NewReviewService(repo)
+  reviewService := service.NewReviewService(repo, cfg.PubMed.BaseURL, cfg.PubMed.APIKey, "storage")
 
   router := gin.Default()
 
@@ -49,6 +49,8 @@ func main() {
       writing := protected.Group("/writing")
       {
         writing.POST("/", api.StartWriting(reviewService))
+        writing.GET("/:id", api.GetWritingStatus(reviewService))
+        writing.GET("/:id/download", api.DownloadWritingDocument(reviewService))
       }
 
       user := protected.Group("/user")
