@@ -87,6 +87,22 @@ go run ./cmd/server
 ./scripts/stop-dev.sh
 ```
 
+### Windows 用户（PowerShell / CMD）
+
+Windows 不支持直接运行 `./scripts/*.sh`，请使用对应的批处理脚本：
+
+```bat
+scripts\start-dev.bat
+```
+
+停止服务：
+
+```bat
+scripts\stop-dev.bat
+```
+
+如果你已安装 Git Bash，也可以在 Git Bash 里运行 `./scripts/start-dev.sh`。
+
 ## Docker 运行
 
 ```bash
