@@ -1,82 +1,82 @@
 package api
 
 import (
+  "encoding/json"
   "net/http"
 
-  "github.com/gin-gonic/gin"
   "github.com/xiaozhi-scientific/backend/internal/model"
   "github.com/xiaozhi-scientific/backend/internal/service"
 )
 
-func Login(authService *service.AuthService) gin.HandlerFunc {
-  return func(c *gin.Context) {
+func Login(authService *service.AuthService) http.HandlerFunc {
+  return func(w http.ResponseWriter, r *http.Request) {
     var credentials struct {
-      Username string `json:"username" binding:"required"`
-      Password string `json:"password" binding:"required"`
+      Username string `json:"username"`
+      Password string `json:"password"`
     }
 
-    if err := c.ShouldBindJSON(&credentials); err != nil {
-      c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+    if err := json.NewDecoder(r.Body).Decode(&credentials); err != nil {
+      writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
       return
     }
 
-    token, user, err := authService.Login(c.Request.Context(), credentials.Username, credentials.Password)
+    token, user, err := authService.Login(r.Context(), credentials.Username, credentials.Password)
     if err != nil {
-      c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
+      writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "Invalid username or password"})
       return
     }
 
-    c.JSON(http.StatusOK, gin.H{
+    writeJSON(w, http.StatusOK, map[string]any{
       "token": token,
       "user":  user,
     })
   }
 }
 
-func Register(authService *service.AuthService) gin.HandlerFunc {
-  return func(c *gin.Context) {
+func Register(authService *service.AuthService) http.HandlerFunc {
+  return func(w http.ResponseWriter, r *http.Request) {
     var user model.User
 
-    if err := c.ShouldBindJSON(&user); err != nil {
-      c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+    if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+      writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
       return
     }
 
-    token, createdUser, err := authService.Register(c.Request.Context(), &user)
+    token, createdUser, err := authService.Register(r.Context(), &user)
     if err != nil {
-      c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+      writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
       return
     }
 
-    c.JSON(http.StatusCreated, gin.H{
+    writeJSON(w, http.StatusCreated, map[string]any{
       "token": token,
       "user":  createdUser,
     })
   }
 }
 
-func Logout() gin.HandlerFunc {
-  return func(c *gin.Context) {
-    c.JSON(http.StatusOK, gin.H{"message": "Successfully logged out"})
+func Logout() http.HandlerFunc {
+  return func(w http.ResponseWriter, _ *http.Request) {
+    writeJSON(w, http.StatusOK, map[string]string{"message": "Successfully logged out"})
   }
 }
 
-func ResetPassword(authService *service.AuthService) gin.HandlerFunc {
-  return func(c *gin.Context) {
+func ResetPassword(authService *service.AuthService) http.HandlerFunc {
+  return func(w http.ResponseWriter, r *http.Request) {
     var request struct {
-      Email string `json:"email" binding:"required,email"`
+      Email string `json:"email"`
     }
 
-    if err := c.ShouldBindJSON(&request); err != nil {
-      c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+    if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+      writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
       return
     }
 
-    if err := authService.SendPasswordResetEmail(c.Request.Context(), request.Email); err != nil {
-      c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send reset email"})
+    if err := authService.SendPasswordResetEmail(r.Context(), request.Email); err != nil {
+      writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "Failed to send reset email"})
       return
     }
 
-    c.JSON(http.StatusOK, gin.H{"message": "Password reset email sent"})
+    writeJSON(w, http.StatusOK, map[string]string{"message": "Password reset email sent"})
   }
 }

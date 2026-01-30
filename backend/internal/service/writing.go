@@ -14,8 +14,6 @@ import (
   "strings"
   "sync"
   "time"
-
-  "github.com/baliance/gooxml/document"
 )
 
 type WritingRequest struct {
@@ -337,36 +335,38 @@ func (service *ReviewService) buildDocx(taskID string, payload WritingRequest, a
     return "", err
   }
 
-  doc := document.New()
-  doc.AddParagraph().AddRun().AddText(payload.Title)
-  doc.AddParagraph().AddRun().AddText(fmt.Sprintf("主题：%s", payload.Topic))
-  doc.AddParagraph().AddRun().AddText(fmt.Sprintf("生成时间：%s", time.Now().Format("2006-01-02 15:04")))
-
-  doc.AddParagraph().AddRun().AddText("引言")
-  doc.AddParagraph().AddRun().AddText("本文基于 PubMed 检索结果整理相关文献摘要，快速生成综述草稿，供后续人工润色与完善。")
-
-  doc.AddParagraph().AddRun().AddText("文献摘要与要点")
-  for index, article := range articles {
-    doc.AddParagraph().AddRun().AddText(fmt.Sprintf("文献 %d", index+1))
-    doc.AddParagraph().AddRun().AddText(fmt.Sprintf("标题：%s", article.Title))
-    doc.AddParagraph().AddRun().AddText(fmt.Sprintf("作者：%s", article.Authors))
-    doc.AddParagraph().AddRun().AddText(fmt.Sprintf("期刊：%s", article.Journal))
-    doc.AddParagraph().AddRun().AddText(fmt.Sprintf("发表时间：%s", article.PubDate))
-    doc.AddParagraph().AddRun().AddText(fmt.Sprintf("PMID：%s", article.PMID))
-    doc.AddParagraph().AddRun().AddText(fmt.Sprintf("摘要：%s", article.Abstract))
-  }
-
-  doc.AddParagraph().AddRun().AddText("结论")
-  doc.AddParagraph().AddRun().AddText("本综述为自动生成的初稿，建议结合原始文献与研究目标进行进一步完善。")
-
   filename := fmt.Sprintf("%s.docx", taskID)
   filePath := filepath.Join(service.storageDir, filename)
 
-  if err := doc.SaveToFile(filePath); err != nil {
+  content := buildDocxText(payload, articles)
+  if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil {
     return "", err
   }
 
   return filePath, nil
+}
+
+func buildDocxText(payload WritingRequest, articles []articleInfo) string {
+  builder := strings.Builder{}
+  builder.WriteString(payload.Title)
+  builder.WriteString("\n")
+  builder.WriteString(fmt.Sprintf("主题：%s\n", payload.Topic))
+  builder.WriteString(fmt.Sprintf("生成时间：%s\n\n", time.Now().Format("2006-01-02 15:04")))
+  builder.WriteString("引言\n")
+  builder.WriteString("本文基于 PubMed 检索结果整理相关文献摘要，快速生成综述草稿，供后续人工润色与完善。\n\n")
+  builder.WriteString("文献摘要与要点\n")
+  for index, article := range articles {
+    builder.WriteString(fmt.Sprintf("文献 %d\n", index+1))
+    builder.WriteString(fmt.Sprintf("标题：%s\n", article.Title))
+    builder.WriteString(fmt.Sprintf("作者：%s\n", article.Authors))
+    builder.WriteString(fmt.Sprintf("期刊：%s\n", article.Journal))
+    builder.WriteString(fmt.Sprintf("发表时间：%s\n", article.PubDate))
+    builder.WriteString(fmt.Sprintf("PMID：%s\n", article.PMID))
+    builder.WriteString(fmt.Sprintf("摘要：%s\n\n", article.Abstract))
+  }
+  builder.WriteString("结论\n")
+  builder.WriteString("本综述为自动生成的初稿，建议结合原始文献与研究目标进行进一步完善。\n")
+  return builder.String()
 }
 
  

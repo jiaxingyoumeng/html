@@ -1,6 +1,6 @@
 package config
 
-import "github.com/spf13/viper"
+import "os"
 
 type Config struct {
   Server struct {
@@ -21,24 +21,22 @@ type Config struct {
 }
 
 func Load() (*Config, error) {
-  viper.SetDefault("server.address", ":8080")
-  viper.SetDefault("database.uri", "mongodb://localhost:27017")
-  viper.SetDefault("database.name", "xiaozhi_scientific")
-  viper.SetDefault("pubmed.base_url", "https://eutils.ncbi.nlm.nih.gov/entrez/eutils")
-  viper.SetDefault("pubmed.api_key", "")
-  viper.SetDefault("jwt.secret", "change-me")
-  viper.SetDefault("jwt.expiration", "24h")
-
-  viper.AutomaticEnv()
-
   cfg := &Config{}
-  cfg.Server.Address = viper.GetString("server.address")
-  cfg.Database.URI = viper.GetString("database.uri")
-  cfg.Database.Name = viper.GetString("database.name")
-  cfg.PubMed.BaseURL = viper.GetString("pubmed.base_url")
-  cfg.PubMed.APIKey = viper.GetString("pubmed.api_key")
-  cfg.JWT.Secret = viper.GetString("jwt.secret")
-  cfg.JWT.Expiration = viper.GetString("jwt.expiration")
+  cfg.Server.Address = getEnv("SERVER_ADDRESS", ":8080")
+  cfg.Database.URI = getEnv("DATABASE_URI", "mongodb://localhost:27017")
+  cfg.Database.Name = getEnv("DATABASE_NAME", "xiaozhi_scientific")
+  cfg.PubMed.BaseURL = getEnv("PUBMED_BASE_URL", "https://eutils.ncbi.nlm.nih.gov/entrez/eutils")
+  cfg.PubMed.APIKey = getEnv("PUBMED_API_KEY", "")
+  cfg.JWT.Secret = getEnv("JWT_SECRET", "change-me")
+  cfg.JWT.Expiration = getEnv("JWT_EXPIRATION", "24h")
 
   return cfg, nil
+}
+
+func getEnv(key string, fallback string) string {
+  value := os.Getenv(key)
+  if value == "" {
+    return fallback
+  }
+  return value
 }

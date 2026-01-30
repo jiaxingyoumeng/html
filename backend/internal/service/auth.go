@@ -6,8 +6,8 @@ import (
 )
 
 type AuthService struct {
-  repo interface{}
-  jwtSecret string
+  repo          interface{}
+  jwtSecret     string
   jwtExpiration string
 }
 

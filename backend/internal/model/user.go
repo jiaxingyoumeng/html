@@ -1,13 +1,9 @@
 package model
 
-import (
-  "time"
-
-  "go.mongodb.org/mongo-driver/bson/primitive"
-)
+import "time"
 
 type User struct {
-  ID           primitive.ObjectID `bson:"_id,omitempty"`
+  ID           string             `bson:"_id,omitempty"`
   Username     string             `bson:"username" binding:"required,min=3,max=20"`
   Email        string             `bson:"email" binding:"required,email"`
   Phone        string             `bson:"phone" binding:"required,len=11"`
