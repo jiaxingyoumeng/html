@@ -79,6 +79,8 @@ go run ./cmd/server
 ./scripts/start-dev.sh
 ```
 
+脚本默认会读取 `PUBMED_API_KEY`，未设置时会使用内置的示例 Key（可在启动前通过环境变量覆盖）。
+
 停止服务：
 
 ```bash

@@ -6,6 +6,8 @@ PID_DIR="$ROOT_DIR/.tmp"
 
 mkdir -p "$PID_DIR"
 
+export PUBMED_API_KEY="${PUBMED_API_KEY:-b7972bf7641ea4b41fe0193baae92207b308}"
+
 start_backend() {
   if [[ -f "$PID_DIR/backend.pid" ]]; then
     echo "Backend already running (pid $(cat "$PID_DIR/backend.pid"))."
