@@ -71,6 +71,20 @@ cd ../backend
 go run ./cmd/server
 ```
 
+## 快速启动（静态前端 + Go 后端）
+
+无需安装前端依赖时，可使用脚本一键启动静态页面与后端服务：
+
+```bash
+./scripts/start-dev.sh
+```
+
+停止服务：
+
+```bash
+./scripts/stop-dev.sh
+```
+
 ## Docker 运行
 
 ```bash
