@@ -46,6 +46,11 @@ func main() {
     protected := apiGroup.Group("/")
     protected.Use(middleware.AuthMiddleware(authService))
     {
+      writing := protected.Group("/writing")
+      {
+        writing.POST("/", api.StartWriting(reviewService))
+      }
+
       user := protected.Group("/user")
       {
         user.GET("/profile", api.GetProfile(userService))

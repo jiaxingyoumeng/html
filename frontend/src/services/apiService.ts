@@ -102,4 +102,16 @@ export const reviewAPI = {
   },
 };
 
+export const writingAPI = {
+  startWriting: async (payload: {
+    title: string;
+    topic: string;
+    locale?: string;
+    pubmedQuery?: string;
+    includeFilters?: boolean;
+  }) => {
+    return api.post("/writing", payload);
+  },
+};
+
 export default api;
