@@ -1,0 +1,16 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>系统设置</title><link rel="stylesheet" href="assets/app.css"></head><body>
+<div class="app"><aside><div class="brand">Doremi婚礼</div><nav id="menu" class="menu"></nav></aside><main>
+<header class="topbar"><h3>系统设置</h3><div class="muted">基础配置与通知偏好</div></header>
+<section class="content"><div id="notice" class="notice"></div>
+<article class="panel"><h4>门店信息</h4><div class="grid-2"><input id="shop"><input id="phone"></div><div class="toolbar" style="margin-top:10px"><button class="primary" id="saveBase">保存基础信息</button></div></article>
+<article class="panel"><h4>通知偏好</h4><div class="toolbar"><label><input type="checkbox" id="sms"> 短信</label><label><input type="checkbox" id="mail"> 邮件</label><button id="saveNotify">保存通知设置</button></div></article>
+<article class="panel"><h4>模拟重置</h4><button id="reset">恢复默认演示数据</button></article>
+</section></main></div>
+<script src="assets/app.js"></script><script>
+nav('settings.html');
+function fill(){const s=Store.load();shop.value=s.settings.shop;phone.value=s.settings.phone;sms.checked=s.settings.sms;mail.checked=s.settings.mail;}
+saveBase.onclick=()=>{const s=Store.load();s.settings.shop=shop.value.trim()||s.settings.shop;s.settings.phone=phone.value.trim()||s.settings.phone;Store.save({settings:s.settings});notice('门店信息已保存');};
+saveNotify.onclick=()=>{const s=Store.load();s.settings.sms=sms.checked;s.settings.mail=mail.checked;Store.save({settings:s.settings});notice('通知偏好已保存');};
+reset.onclick=()=>{localStorage.removeItem(Store.key);Store.save(Store.defaults);fill();notice('已恢复默认数据');};
+window.addEventListener('store:change',fill);fill();
+</script></body></html>

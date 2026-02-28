@@ -1,0 +1,15 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>图册交付</title><link rel="stylesheet" href="assets/app.css"></head><body>
+<div class="app"><aside><div class="brand">Doremi婚礼</div><nav id="menu" class="menu"></nav></aside><main>
+<header class="topbar"><h3>图册交付</h3><div class="muted">交付流程推进与待交付联动</div></header>
+<section class="content"><div id="notice" class="notice"></div>
+<article class="panel"><div class="toolbar"><select id="st"><option>全部</option><option>修图中</option><option>待客户确认</option><option>已交付</option></select><button class="primary" id="add">新增交付任务</button></div></article>
+<article class="panel"><table class="table"><thead><tr><th>客户</th><th>图册</th><th>状态</th><th>进度</th><th>操作</th></tr></thead><tbody id="tb"></tbody></table></article>
+</section></main></div>
+<script src="assets/app.js"></script><script>
+nav('albums.html');
+const next={修图中:['待客户确认',90],待客户确认:['已交付',100],已交付:['已交付',100]};
+function render(){const s=Store.load();const f=st.value;const arr=s.albums.filter(a=>f==='全部'||a.status===f);tb.innerHTML=arr.map(a=>`<tr><td>${a.customer}</td><td>${a.name}</td><td><span class="badge ${statusBadge(a.status)}">${a.status}</span></td><td>${a.progress}%</td><td><button onclick="advance('${a.customer}','${a.name}')">推进</button></td></tr>`).join('')||'<tr><td colspan="5" class="muted">暂无数据</td></tr>'}
+window.advance=(customer,name)=>{const s=Store.load();const a=s.albums.find(x=>x.customer===customer&&x.name===name);if(!a)return;const before=a.status;[a.status,a.progress]=next[a.status];if(before!=='已交付'&&a.status==='已交付'){s.pendingAlbums=Math.max(0,Number(s.pendingAlbums)-1);}Store.save({albums:s.albums,pendingAlbums:s.pendingAlbums});render();notice('交付状态已更新');};
+st.onchange=render;add.onclick=()=>{const s=Store.load();s.albums.unshift({customer:'新客户'+Math.floor(Math.random()*90+10),name:'新增图册任务',status:'修图中',progress:20});s.pendingAlbums=Number(s.pendingAlbums)+1;Store.save({albums:s.albums,pendingAlbums:s.pendingAlbums});render();notice('新增交付任务成功');};
+window.addEventListener('store:change',render);render();
+</script></body></html>

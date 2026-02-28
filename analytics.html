@@ -1,0 +1,15 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>经营分析</title><link rel="stylesheet" href="assets/app.css"><script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script></head><body>
+<div class="app"><aside><div class="brand">Doremi婚礼</div><nav id="menu" class="menu"></nav></aside><main>
+<header class="topbar"><h3>经营分析</h3><div class="muted">指标解读与目标管理</div></header>
+<section class="content"><div id="notice" class="notice"></div>
+<div class="grid-3"><div class="stat"><div class="muted">月目标</div><h2 id="target"></h2></div><div class="stat"><div class="muted">当前营收</div><h2 id="actual"></h2></div><div class="stat"><div class="muted">达成率</div><h2 id="rate"></h2></div></div>
+<article class="panel"><div class="toolbar"><input id="goal" placeholder="输入新目标"><button class="primary" id="saveGoal">保存目标</button><button id="simulate">模拟新增成交 +20000</button></div></article>
+<article class="panel"><h4>订单状态分布</h4><div id="pie" style="height:280px"></div></article>
+</section></main></div>
+<script src="assets/app.js"></script><script>
+nav('analytics.html');
+const pie=echarts.init(document.getElementById('pie'));
+function render(){const s=Store.load();target.textContent='¥'+Number(s.revenueTarget).toLocaleString('zh-CN');actual.textContent='¥'+Number(s.monthRevenue).toLocaleString('zh-CN');rate.textContent=Math.round(Number(s.monthRevenue)/Math.max(1,Number(s.revenueTarget))*100)+'%';const counts={待签约:0,执行中:0,已完成:0};s.orders.forEach(o=>counts[o.status]=(counts[o.status]||0)+1);pie.setOption({tooltip:{trigger:'item'},legend:{bottom:0},series:[{type:'pie',radius:['36%','68%'],data:[{name:'待签约',value:counts['待签约']},{name:'执行中',value:counts['执行中']},{name:'已完成',value:counts['已完成']}]}]});}
+saveGoal.onclick=()=>{const v=parseInt(goal.value,10);if(!v)return notice('请输入有效数字');Store.save({revenueTarget:v});notice('目标已更新');};simulate.onclick=()=>{const s=Store.load();Store.save({monthRevenue:Number(s.monthRevenue)+20000});notice('营收已更新');};
+window.addEventListener('resize',()=>pie.resize());window.addEventListener('store:change',render);render();
+</script></body></html>
