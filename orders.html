@@ -1,0 +1,16 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>订单管理</title><link rel="stylesheet" href="assets/app.css"></head><body>
+<div class="app"><aside><div class="brand">Doremi婚礼</div><nav id="menu" class="menu"></nav></aside><main>
+<header class="topbar"><h3>订单管理</h3><div class="muted">订单搜索、状态推进、转化联动</div></header>
+<section class="content"><div id="notice" class="notice"></div>
+<article class="panel"><div class="toolbar"><input id="kw" placeholder="搜索订单号/客户"><select id="st"><option>全部</option><option>待签约</option><option>执行中</option><option>已完成</option></select><button class="primary" id="create">新建订单</button></div></article>
+<article class="panel"><table class="table"><thead><tr><th>订单号</th><th>客户</th><th>套餐</th><th>金额</th><th>状态</th><th>操作</th></tr></thead><tbody id="tb"></tbody></table></article>
+</section></main></div>
+<script src="assets/app.js"></script><script>
+nav('orders.html');
+const next={待签约:'执行中',执行中:'已完成',已完成:'已完成'};
+function render(){const s=Store.load();const k=kw.value.trim();const f=st.value;const list=s.orders.filter(o=>(!k||(`${o.id}${o.customer}`.includes(k)))&&(f==='全部'||o.status===f));tb.innerHTML=list.map(o=>`<tr><td>${o.id}</td><td>${o.customer}</td><td>${o.pkg}</td><td>¥${o.amount.toLocaleString('zh-CN')}</td><td><span class="badge ${statusBadge(o.status)}">${o.status}</span></td><td><button onclick="advance('${o.id}')">推进</button></td></tr>`).join('')||'<tr><td colspan="6" class="muted">无匹配订单</td></tr>'}
+window.advance=(id)=>{const s=Store.load();const o=s.orders.find(x=>x.id===id);if(!o)return;o.status=next[o.status];if(o.status==='已完成'){s.monthRevenue=Number(s.monthRevenue)+Number(o.amount);s.todayOrders=Number(s.todayOrders)+1;}Store.save({orders:s.orders,monthRevenue:s.monthRevenue,todayOrders:s.todayOrders});render();notice('订单状态已推进');};
+kw.oninput=render;st.onchange=render;
+create.onclick=()=>{const s=Store.load();s.orders.unshift({id:'OD'+Math.floor(Math.random()*90000+10000),customer:'新客户'+Math.floor(Math.random()*90+10),pkg:'定制套餐',status:'待签约',amount:12800});Store.save({orders:s.orders,newLeads:Math.max(0,Number(s.newLeads)-1)});render();notice('新建订单成功（线索-1）');};
+window.addEventListener('store:change',render);render();
+</script></body></html>

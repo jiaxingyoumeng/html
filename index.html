@@ -1,0 +1,21 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>控制台</title><link rel="stylesheet" href="assets/app.css"><script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script></head><body>
+<div class="app"><aside><div class="brand">Doremi婚礼</div><nav id="menu" class="menu"></nav></aside><main>
+<header class="topbar"><h3>业务控制台</h3><div class="muted">全局指标与待办闭环</div></header>
+<section class="content"><div id="notice" class="notice"></div>
+<div class="cards" id="kpis"></div>
+<div class="grid-2"><article class="panel"><h4>订单趋势</h4><div id="trend" style="height:260px"></div></article><article class="panel"><h4>待办事项</h4><div class="toolbar"><button data-tab="全部" class="primary">全部</button><button data-tab="紧急">紧急</button><button data-tab="普通">普通</button><button id="addTodo">新增</button></div><div id="todo" class="list"></div></article></div>
+<article class="panel"><h4>快捷动作</h4><div class="toolbar"><button onclick="location.href='orders.html'">处理订单</button><button onclick="location.href='customers.html'">跟进线索</button><button onclick="location.href='albums.html'">交付图册</button><button class="primary" id="simulateDeal">模拟新增成交 +18000</button></div></article>
+</section></main></div>
+<script src="assets/app.js"></script><script>
+nav('index.html');
+const chart = echarts.init(document.getElementById('trend'));
+chart.setOption({tooltip:{trigger:'axis'},xAxis:{type:'category',data:['1月','2月','3月','4月','5月','6月','7月']},yAxis:{type:'value'},series:[{type:'line',smooth:true,areaStyle:{},data:[80,120,98,134,166,210,228]}],grid:{left:30,right:10,top:20,bottom:24}});
+window.addEventListener('resize',()=>chart.resize());
+let tab='全部';
+function render(){const s=Store.load();kpis.innerHTML=[['今日订单',s.todayOrders],['本月营收','¥'+Number(s.monthRevenue).toLocaleString('zh-CN')],['新增线索',s.newLeads],['待交付相册',s.pendingAlbums]].map(i=>`<div class=stat><div class=muted>${i[0]}</div><h2>${i[1]}</h2></div>`).join('');const list=s.todos.filter(t=>tab==='全部'||t.level===tab);todo.innerHTML=list.map((t,idx)=>`<div class="item"><div><span class="badge ${t.level==='紧急'?'b-danger':'b-success'}">${t.level}</span> ${t.text}</div><button onclick="toggleDone(${idx})">${t.done?'恢复':'完成'}</button></div>`).join('')||'<div class=muted>当前无任务</div>'}
+window.toggleDone=(idx)=>{const s=Store.load();const list=s.todos.filter(t=>tab==='全部'||t.level===tab);const target=list[idx];const real=s.todos.find(x=>x.text===target.text&&x.level===target.level&&x.done===target.done);if(!real)return;real.done=!real.done;Store.save({todos:s.todos});render();notice('待办状态已更新');};
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;document.querySelectorAll('[data-tab]').forEach(x=>x.classList.remove('primary'));b.classList.add('primary');render();});
+addTodo.onclick=()=>{const s=Store.load();s.todos.unshift({level:'紧急',text:'新增任务 '+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),done:false});Store.save({todos:s.todos});render();notice('新增待办成功');};
+simulateDeal.onclick=()=>{const s=Store.load();Store.save({monthRevenue:Number(s.monthRevenue)+18000,todayOrders:Number(s.todayOrders)+2});render();notice('营收与订单已联动更新');};
+window.addEventListener('store:change',render);render();
+</script></body></html>
